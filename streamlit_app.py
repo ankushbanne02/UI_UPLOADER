@@ -41,36 +41,12 @@ st.markdown(
     <style>
         /* Page background */
         .stApp {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background: #ffffff;
         }
 
         /* Hide default Streamlit chrome a bit */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
-
-        /* Header */
-        .app-header {
-            background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
-            padding: 28px 32px;
-            border-radius: 16px;
-            margin-bottom: 24px;
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
-        }
-        .app-header h1 {
-            color: white;
-            margin: 0;
-            font-size: 32px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-        .app-header p {
-            color: rgba(255,255,255,0.85);
-            margin: 6px 0 0 0;
-            font-size: 15px;
-        }
-
-        /* Card wrapper — applied to the Streamlit container holding each card */
-        [data-testid="stVerticalBlock"]:has(> [data-testid="stVerticalBlockBorderWrapper"]) {}
 
         .parcel-card-head {
             padding: 4px 4px 0 4px;
@@ -78,21 +54,22 @@ st.markdown(
 
         /* Style each card's container */
         div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"] {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
             border-radius: 14px;
             padding: 16px;
             margin-bottom: 12px;
             transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
         div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"]:hover {
             transform: translateY(-2px);
-            border-color: rgba(139, 92, 246, 0.5);
-            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.2);
+            border-color: #f58220;
+            box-shadow: 0 8px 24px rgba(245, 130, 32, 0.18);
         }
 
         .card-date {
-            color: #a78bfa;
+            color: #f58220;
             font-size: 13px;
             font-weight: 600;
             text-transform: uppercase;
@@ -100,13 +77,13 @@ st.markdown(
             margin-bottom: 4px;
         }
         .card-plc {
-            color: white;
+            color: #111827;
             font-size: 22px;
             font-weight: 700;
             margin-bottom: 6px;
         }
         .card-meta {
-            color: rgba(255,255,255,0.6);
+            color: #4b5563;
             font-size: 13px;
             margin-bottom: 14px;
         }
@@ -133,36 +110,16 @@ st.markdown(
             width: 100%;
         }
 
-        /* Stats row */
-        .stat-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px;
-            padding: 16px 20px;
-            text-align: center;
-        }
-        .stat-num {
-            color: #f9fafb;
-            font-size: 28px;
-            font-weight: 700;
-        }
-        .stat-label {
-            color: rgba(255,255,255,0.6);
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
         /* Uploader */
         [data-testid="stFileUploader"] {
-            background: rgba(255,255,255,0.04);
-            border: 2px dashed rgba(139, 92, 246, 0.4);
+            background: #fafafa;
+            border: 2px dashed #f58220;
             border-radius: 14px;
             padding: 8px;
         }
 
-        /* Text white-ish */
-        .stMarkdown, label, p { color: #e5e7eb !important; }
+        /* Default text color */
+        .stMarkdown, label, p { color: #1f2937 !important; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -386,8 +343,8 @@ if data:
                                 <div class="card-date">{date}</div>
                                 <div class="card-plc">PLC {plc}</div>
                                 <div class="card-meta">
-                                    <div><span style="color:rgba(255,255,255,0.45)">Start:</span> <strong style="color:#a7f3d0">{start_t}</strong></div>
-                                    <div><span style="color:rgba(255,255,255,0.45)">End:</span> <strong style="color:#fca5a5">{end_t}</strong></div>
+                                    <div><span style="color:#6b7280">Start:</span> <strong style="color:#059669">{start_t}</strong></div>
+                                    <div><span style="color:#6b7280">End:</span> <strong style="color:#dc2626">{end_t}</strong></div>
                                 </div>
                             </div>
                             """,

@@ -10,8 +10,8 @@ enableWebsocketCompression = false
 gatherUsageStats = false
 
 [theme]
-base = "dark"
-primaryColor = "#8b5cf6"
-backgroundColor = "#0f172a"
-secondaryBackgroundColor = "#1e293b"
-textColor = "#e5e7eb"
+base = "light"
+primaryColor = "#f58220"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f5f5f7"
+textColor = "#1f2937"
