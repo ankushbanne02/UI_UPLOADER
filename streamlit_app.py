@@ -55,17 +55,19 @@ st.markdown(
         /* Style each card's container */
         div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"] {
             background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 12px;
+            border: 1.5px solid #e5e7eb;
+            border-left: 5px solid #f58220;
+            border-radius: 12px;
+            padding: 18px;
+            margin: 0 6px 14px 6px;
             transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
         }
         div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"]:hover {
             transform: translateY(-2px);
             border-color: #f58220;
-            box-shadow: 0 8px 24px rgba(245, 130, 32, 0.18);
+            border-left-color: #f58220;
+            box-shadow: 0 10px 24px rgba(245, 130, 32, 0.20);
         }
 
         .card-date {
@@ -235,11 +237,10 @@ st.markdown(
         div[data-testid="stToolbar"] {{ display: none !important; }}
         .block-container {{
             padding-top: 1rem !important;
-            padding-left: 0rem !important;
-            padding-right: 0rem !important;
+            padding-left: 28px !important;
+            padding-right: 28px !important;
             max-width: 100% !important;
         }}
-        .page-pad {{ padding: 0 24px; }}
         .navbar {{
             display: flex;
             align-items: center;
@@ -250,7 +251,7 @@ st.markdown(
             color: white;
             font-family: 'IBM Plex Sans', sans-serif;
             border-radius: 4px;
-            margin-bottom: 20px;
+            margin: 0 -28px 20px -28px;
         }}
         .navbar .left, .navbar .right {{
             display: flex;
@@ -271,13 +272,6 @@ st.markdown(
             <img src="data:image/png;base64,{LOGTALK_B64}" alt="LogTalk" />
         </div>
     </div>
-    <style>
-        /* Add side padding back to all content after the navbar */
-        section.main .block-container > div[data-testid="stVerticalBlock"] > div:not(:first-child) {{
-            padding-left: 24px;
-            padding-right: 24px;
-        }}
-    </style>
     """,
     unsafe_allow_html=True,
 )
