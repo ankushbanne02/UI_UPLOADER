@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import base64
 import threading
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -258,6 +259,58 @@ def process_and_upload(key, lines, progress_cb):
     except Exception as e:
         return False, f"Error: {e}"
 
+
+# ---------------- NAVBAR ----------------
+def _img_b64(path: str) -> str:
+    try:
+        with open(path, "rb") as f:
+            return base64.b64encode(f.read()).decode("ascii")
+    except Exception:
+        return ""
+
+VANDERLANDE_B64 = _img_b64("attached_assets/company_logo_1776967736368.jpeg")
+LOGTALK_B64 = _img_b64("attached_assets/LogTalk_Logo_1776967736369.png")
+
+st.markdown(
+    f"""
+    <style>
+        .block-container {{ padding-top: 0.5rem !important; }}
+        .navbar {{
+            background: #f08020;
+            border-radius: 14px;
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+            box-shadow: 0 6px 20px rgba(240, 128, 32, 0.35);
+            min-height: 80px;
+        }}
+        .navbar .left, .navbar .right {{
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 8px 18px;
+            border-radius: 10px;
+        }}
+        .navbar img {{
+            display: block;
+            object-fit: contain;
+        }}
+        .navbar .left img {{ height: 56px; }}
+        .navbar .right img {{ height: 64px; }}
+    </style>
+    <div class="navbar">
+        <div class="left">
+            <img src="data:image/jpeg;base64,{VANDERLANDE_B64}" alt="Vanderlande" />
+        </div>
+        <div class="right">
+            <img src="data:image/png;base64,{LOGTALK_B64}" alt="LogTalk" />
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 # ---------------- HEADER ----------------
 st.markdown(
