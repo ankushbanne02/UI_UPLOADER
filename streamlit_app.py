@@ -55,7 +55,7 @@ st.markdown(
         /* Style each card's container */
         div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"] {
             background: #ffffff;
-            border: 1.5px solid #e5e7eb;
+            border: 2px solid #000000;
             border-left: 5px solid #f58220;
             border-radius: 12px;
             padding: 18px;
