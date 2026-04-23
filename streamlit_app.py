@@ -52,7 +52,7 @@ st.markdown(
         div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"] {
             position: relative;
             background: linear-gradient(180deg, #ffffff 0%, #fffaf5 100%);
-            border: 1.5px solid #1f2937;
+            border: 2.5px solid #0f172a;
             border-radius: 16px;
             padding: 20px 20px 16px 20px;
             margin: 0 8px 18px 8px;
