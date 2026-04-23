@@ -274,31 +274,35 @@ LOGTALK_B64 = _img_b64("attached_assets/LogTalk_Logo_1776967736369.png")
 st.markdown(
     f"""
     <style>
-        .block-container {{ padding-top: 0.5rem !important; }}
+        .block-container {{
+            padding-top: 0rem !important;
+            padding-left: 0rem !important;
+            padding-right: 0rem !important;
+            max-width: 100% !important;
+        }}
+        .page-pad {{ padding: 0 24px; }}
         .navbar {{
-            background: #f08020;
-            border-radius: 14px;
-            padding: 14px 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 22px;
-            box-shadow: 0 6px 20px rgba(240, 128, 32, 0.35);
-            min-height: 80px;
+            background-color: #f58220;
+            padding: 10px 20px;
+            height: 60px;
+            color: white;
+            font-family: 'IBM Plex Sans', sans-serif;
+            border-radius: 4px;
+            margin-bottom: 20px;
         }}
         .navbar .left, .navbar .right {{
             display: flex;
             align-items: center;
             background: white;
-            padding: 8px 18px;
-            border-radius: 10px;
+            padding: 4px 12px;
+            border-radius: 6px;
         }}
-        .navbar img {{
-            display: block;
-            object-fit: contain;
-        }}
-        .navbar .left img {{ height: 56px; }}
-        .navbar .right img {{ height: 64px; }}
+        .navbar img {{ display: block; object-fit: contain; }}
+        .navbar .left img {{ height: 40px; }}
+        .navbar .right img {{ height: 46px; }}
     </style>
     <div class="navbar">
         <div class="left">
@@ -308,17 +312,13 @@ st.markdown(
             <img src="data:image/png;base64,{LOGTALK_B64}" alt="LogTalk" />
         </div>
     </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-# ---------------- HEADER ----------------
-st.markdown(
-    """
-    <div class="app-header">
-        <h1>📦 Parcel Log Uploader</h1>
-        <p>Logtalk · Upload, parse, and ship parcel logs to MongoDB</p>
-    </div>
+    <style>
+        /* Add side padding back to all content after the navbar */
+        section.main .block-container > div[data-testid="stVerticalBlock"] > div:not(:first-child) {{
+            padding-left: 24px;
+            padding-right: 24px;
+        }}
+    </style>
     """,
     unsafe_allow_html=True,
 )
