@@ -274,8 +274,10 @@ LOGTALK_B64 = _img_b64("attached_assets/LogTalk_Logo_1776967736369.png")
 st.markdown(
     f"""
     <style>
+        header[data-testid="stHeader"] {{ display: none !important; }}
+        div[data-testid="stToolbar"] {{ display: none !important; }}
         .block-container {{
-            padding-top: 0rem !important;
+            padding-top: 1rem !important;
             padding-left: 0rem !important;
             padding-right: 0rem !important;
             max-width: 100% !important;
