@@ -280,25 +280,19 @@ if uploaded_file is not None and uploaded_file.name != st.session_state.filename
 # ---------------- STATS ----------------
 data = st.session_state.data
 if data:
-    total_groups = len(data)
-    total_lines = sum(len(v) for v in data.values())
-    unique_dates = len({k.split("_PLC")[0] for k in data})
-    unique_plcs = len({k.split("_PLC")[1] for k in data})
-
-    c1, c2, c3, c4 = st.columns(4)
-    for col, num, label in zip(
-        (c1, c2, c3, c4),
-        (total_groups, total_lines, unique_dates, unique_plcs),
-        ("Groups", "Log Lines", "Dates", "PLCs"),
-    ):
-        with col:
-            st.markdown(
-                f'<div class="stat-card"><div class="stat-num">{num}</div>'
-                f'<div class="stat-label">{label}</div></div>',
-                unsafe_allow_html=True,
-            )
-
     st.markdown("### Parsed groups")
+
+    time_pattern = re.compile(r"(\d{2}:\d{2}:\d{2}(?:[.,]\d+)?)")
+
+    def get_time_range(lines):
+        times = []
+        for ln in lines:
+            m = time_pattern.search(ln)
+            if m:
+                times.append(m.group(1))
+        if not times:
+            return "—", "—"
+        return times[0], times[-1]
 
     # ---------------- CARDS GRID ----------------
     keys = sorted(data.keys())
@@ -308,14 +302,17 @@ if data:
         cols = st.columns(cols_per_row)
         for col, key in zip(cols, row_keys):
             date, plc = key.split("_PLC")
-            line_count = len(data[key])
+            start_t, end_t = get_time_range(data[key])
             with col:
                 st.markdown(
                     f"""
                     <div class="parcel-card">
                         <div class="card-date">{date}</div>
                         <div class="card-plc">PLC {plc}</div>
-                        <div class="card-meta">{line_count} log lines</div>
+                        <div class="card-meta">
+                            <div><span style="color:rgba(255,255,255,0.45)">Start:</span> <strong style="color:#a7f3d0">{start_t}</strong></div>
+                            <div><span style="color:rgba(255,255,255,0.45)">End:</span> <strong style="color:#fca5a5">{end_t}</strong></div>
+                        </div>
                     </div>
                     """,
                     unsafe_allow_html=True,
