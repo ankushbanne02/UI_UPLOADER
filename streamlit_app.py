@@ -55,13 +55,13 @@ st.markdown(
         /* Style each card's container */
         div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"] {
             background: #ffffff;
-            border: 2px solid #000000;
-            border-left: 5px solid #f58220;
+            border: 3px solid #000000;
+            border-left: 8px solid #f58220;
             border-radius: 12px;
             padding: 18px;
             margin: 0 6px 14px 6px;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
         }
         div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"]:hover {
             transform: translateY(-2px);
