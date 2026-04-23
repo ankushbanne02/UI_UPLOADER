@@ -135,6 +135,8 @@ if "filename" not in st.session_state:
     st.session_state.filename = None
 if "uploader_key" not in st.session_state:
     st.session_state.uploader_key = 0
+if "upload_success" not in st.session_state:
+    st.session_state.upload_success = None  # dict with key/date/plc/start/end/count
 if "mongo_client" not in st.session_state:
     try:
         st.session_state.mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
@@ -277,6 +279,55 @@ st.markdown(
 )
 
 
+# ---------------- SUCCESS DIALOG ----------------
+if st.session_state.upload_success is not None:
+    info = st.session_state.upload_success
+
+    @st.dialog("✅ Upload Successful")
+    def _show_success_dialog():
+        st.markdown(
+            f"""
+            <div style="padding: 8px 4px;">
+                <div style="font-size:16px; color:#059669; font-weight:600; margin-bottom:14px;">
+                    Logs uploaded to MongoDB successfully.
+                </div>
+                <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:14px;">
+                    <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f3f4f6;">
+                        <span style="color:#6b7280;">Date</span>
+                        <strong style="color:#111827;">{info['date']}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f3f4f6;">
+                        <span style="color:#6b7280;">PLC</span>
+                        <strong style="color:#111827;">PLC {info['plc']}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f3f4f6;">
+                        <span style="color:#6b7280;">Start time</span>
+                        <strong style="color:#059669;">{info['start']}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f3f4f6;">
+                        <span style="color:#6b7280;">End time</span>
+                        <strong style="color:#dc2626;">{info['end']}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:6px 0;">
+                        <span style="color:#6b7280;">Log lines</span>
+                        <strong style="color:#111827;">{info['lines']}</strong>
+                    </div>
+                </div>
+                <div style="margin-top:12px; color:#4b5563; font-size:13px;">{info['msg']}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("OK, remove card", type="primary", use_container_width=True):
+            st.session_state.data.pop(info["key"], None)
+            if not st.session_state.data:
+                st.session_state.filename = None
+            st.session_state.upload_success = None
+            st.rerun()
+
+    _show_success_dialog()
+
+
 # ---------------- UPLOADER ----------------
 if not st.session_state.data:
     uploaded_file = st.file_uploader(
@@ -371,10 +422,16 @@ if data:
 
                     success, msg = process_and_upload(key, data[key], cb)
                     if success:
-                        status_text.success(msg)
-                        time.sleep(0.8)
-                        # Remove the card after successful upload
-                        st.session_state.data.pop(key, None)
+                        # Stash details for the success dialog; do NOT remove card yet
+                        st.session_state.upload_success = {
+                            "key": key,
+                            "date": date,
+                            "plc": plc,
+                            "start": start_t,
+                            "end": end_t,
+                            "lines": len(data[key]),
+                            "msg": msg,
+                        }
                         st.rerun()
                     else:
                         status_text.error(msg)
