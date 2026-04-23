@@ -266,10 +266,16 @@ st.markdown(
 uploaded_file = st.file_uploader(
     "Upload a TXT log file",
     type=["txt"],
-    help="The file is parsed by date and PLC, then grouped into upload-ready cards.",
+    accept_multiple_files=False,
+    help="One file at a time. Remove the current file to upload a new one.",
 )
 
-if uploaded_file is not None and uploaded_file.name != st.session_state.filename:
+if uploaded_file is None:
+    # File removed -> clear parsed groups so a new file can be uploaded fresh
+    if st.session_state.filename is not None:
+        st.session_state.data = {}
+        st.session_state.filename = None
+elif uploaded_file.name != st.session_state.filename:
     raw = uploaded_file.read().decode("utf-8", errors="ignore")
     lines = raw.splitlines(keepends=True)
     st.session_state.data = split_by_date_plc(lines)
