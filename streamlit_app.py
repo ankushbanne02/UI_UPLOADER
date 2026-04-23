@@ -48,103 +48,47 @@ st.markdown(
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
 
-        /* ---------- Parsed group card ---------- */
-        div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"] {
-            position: relative;
-            background: linear-gradient(180deg, #ffffff 0%, #fffaf5 100%);
-            border: 2.5px solid #0f172a;
-            border-radius: 16px;
-            padding: 20px 20px 16px 20px;
-            margin: 0 8px 18px 8px;
-            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-            box-shadow:
-                0 1px 2px rgba(15, 23, 42, 0.06),
-                0 8px 24px -10px rgba(15, 23, 42, 0.18);
-            overflow: hidden;
+        .parcel-card-head {
+            padding: 4px 4px 0 4px;
         }
-        /* Top accent stripe */
-        div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"]::before {
-            content: "";
-            position: absolute;
-            inset: 0 0 auto 0;
-            height: 5px;
-            background: linear-gradient(90deg, #f58220 0%, #fbbf24 100%);
-            border-top-left-radius: 14px;
-            border-top-right-radius: 14px;
+
+        /* Style each card's container */
+        div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"] {
+            background: #ffffff;
+            border: 3px solid #000000;
+            border-left: 8px solid #f58220;
+            border-radius: 12px;
+            padding: 18px;
+            margin: 0 6px 14px 6px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
         }
         div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"]:hover {
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             border-color: #f58220;
-            box-shadow:
-                0 4px 8px rgba(245, 130, 32, 0.10),
-                0 18px 36px -12px rgba(245, 130, 32, 0.30);
+            border-left-color: #f58220;
+            box-shadow: 0 10px 24px rgba(245, 130, 32, 0.20);
         }
 
-        .parcel-card-head { padding: 6px 0 0 0; }
-
-        /* Date pill */
         .card-date {
-            display: inline-block;
-            background: #fff3e6;
-            color: #b45309;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            border: 1px solid #fed7aa;
-            margin-bottom: 10px;
-        }
-
-        /* PLC title */
-        .card-plc {
-            color: #0f172a;
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: -0.3px;
-            line-height: 1.1;
-            margin-bottom: 14px;
-        }
-        .card-plc::before {
-            content: "⚙";
             color: #f58220;
-            margin-right: 8px;
-            font-size: 22px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
         }
-
-        /* Time grid */
+        .card-plc {
+            color: #111827;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
         .card-meta {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            color: #4b5563;
+            font-size: 13px;
             margin-bottom: 14px;
         }
-        .time-chip {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 8px 10px;
-        }
-        .time-chip .label {
-            display: block;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: #6b7280;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-        .time-chip .value {
-            font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
-            font-size: 14px;
-            font-weight: 700;
-            color: #0f172a;
-        }
-        .time-chip.start { border-left: 3px solid #10b981; }
-        .time-chip.end   { border-left: 3px solid #ef4444; }
-        .time-chip.start .value { color: #047857; }
-        .time-chip.end .value   { color: #b91c1c; }
 
         /* Buttons */
         .stButton > button {
@@ -441,17 +385,11 @@ if data:
                         st.markdown(
                             f"""
                             <div class="parcel-card-head">
-                                <div class="card-date">📅 {date}</div>
+                                <div class="card-date">{date}</div>
                                 <div class="card-plc">PLC {plc}</div>
                                 <div class="card-meta">
-                                    <div class="time-chip start">
-                                        <span class="label">Start</span>
-                                        <span class="value">{start_t}</span>
-                                    </div>
-                                    <div class="time-chip end">
-                                        <span class="label">End</span>
-                                        <span class="value">{end_t}</span>
-                                    </div>
+                                    <div><span style="color:#6b7280">Start:</span> <strong style="color:#059669">{start_t}</strong></div>
+                                    <div><span style="color:#6b7280">End:</span> <strong style="color:#dc2626">{end_t}</strong></div>
                                 </div>
                             </div>
                             """,
