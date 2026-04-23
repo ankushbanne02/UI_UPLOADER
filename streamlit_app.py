@@ -68,21 +68,28 @@ st.markdown(
             font-size: 15px;
         }
 
-        /* Card */
-        .parcel-card {
+        /* Card wrapper — applied to the Streamlit container holding each card */
+        [data-testid="stVerticalBlock"]:has(> [data-testid="stVerticalBlockBorderWrapper"]) {}
+
+        .parcel-card-head {
+            padding: 4px 4px 0 4px;
+        }
+
+        /* Style each card's container */
+        div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"] {
             background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 14px;
-            padding: 20px;
-            margin-bottom: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
             transition: all 0.2s ease;
         }
-        .parcel-card:hover {
+        div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"]:hover {
             transform: translateY(-2px);
             border-color: rgba(139, 92, 246, 0.5);
             box-shadow: 0 8px 24px rgba(139, 92, 246, 0.2);
         }
+
         .card-date {
             color: #a78bfa;
             font-size: 13px;
@@ -265,25 +272,27 @@ st.markdown(
 
 
 # ---------------- UPLOADER ----------------
-uploaded_file = st.file_uploader(
-    "Upload a TXT log file",
-    type=["txt"],
-    accept_multiple_files=False,
-    key=f"uploader_{st.session_state.uploader_key}",
-    help="Upload one file. After parsing, the uploader resets so you can add another.",
-)
+if not st.session_state.data:
+    uploaded_file = st.file_uploader(
+        "Upload a TXT log file",
+        type=["txt"],
+        accept_multiple_files=False,
+        key=f"uploader_{st.session_state.uploader_key}",
+        help="Upload one file. Clear all parsed groups before uploading another.",
+    )
 
-if uploaded_file is not None:
-    raw = uploaded_file.read().decode("utf-8", errors="ignore")
-    lines = raw.splitlines(keepends=True)
-    st.session_state.data = split_by_date_plc(lines)
-    st.session_state.filename = uploaded_file.name
-    # Reset the uploader so the file disappears from the upload box
-    st.session_state.uploader_key += 1
-    st.rerun()
-
-if st.session_state.filename:
-    st.success(f"Loaded: {st.session_state.filename}")
+    if uploaded_file is not None:
+        raw = uploaded_file.read().decode("utf-8", errors="ignore")
+        lines = raw.splitlines(keepends=True)
+        st.session_state.data = split_by_date_plc(lines)
+        st.session_state.filename = uploaded_file.name
+        # Reset the uploader so the file disappears from the upload box
+        st.session_state.uploader_key += 1
+        st.rerun()
+else:
+    st.info(
+        f"📄 **{st.session_state.filename}** — clear all parsed groups below to upload a new file."
+    )
 
 
 # ---------------- STATS ----------------
@@ -313,19 +322,28 @@ if data:
             date, plc = key.split("_PLC")
             start_t, end_t = get_time_range(data[key])
             with col:
-                st.markdown(
-                    f"""
-                    <div class="parcel-card">
-                        <div class="card-date">{date}</div>
-                        <div class="card-plc">PLC {plc}</div>
-                        <div class="card-meta">
-                            <div><span style="color:rgba(255,255,255,0.45)">Start:</span> <strong style="color:#a7f3d0">{start_t}</strong></div>
-                            <div><span style="color:rgba(255,255,255,0.45)">End:</span> <strong style="color:#fca5a5">{end_t}</strong></div>
-                        </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+                with st.container():
+                    head_left, head_right = st.columns([5, 1])
+                    with head_left:
+                        st.markdown(
+                            f"""
+                            <div class="parcel-card-head">
+                                <div class="card-date">{date}</div>
+                                <div class="card-plc">PLC {plc}</div>
+                                <div class="card-meta">
+                                    <div><span style="color:rgba(255,255,255,0.45)">Start:</span> <strong style="color:#a7f3d0">{start_t}</strong></div>
+                                    <div><span style="color:rgba(255,255,255,0.45)">End:</span> <strong style="color:#fca5a5">{end_t}</strong></div>
+                                </div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+                    with head_right:
+                        if st.button("✕", key=f"close_{key}", help="Remove this card"):
+                            st.session_state.data.pop(key, None)
+                            if not st.session_state.data:
+                                st.session_state.filename = None
+                            st.rerun()
 
                 file_bytes = "".join(data[key]).encode("utf-8")
                 st.download_button(
