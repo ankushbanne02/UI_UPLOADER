@@ -166,6 +166,8 @@ if "data" not in st.session_state:
     st.session_state.data = {}  # key -> list[str]
 if "filename" not in st.session_state:
     st.session_state.filename = None
+if "uploader_key" not in st.session_state:
+    st.session_state.uploader_key = 0
 if "mongo_client" not in st.session_state:
     try:
         st.session_state.mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
@@ -267,20 +269,21 @@ uploaded_file = st.file_uploader(
     "Upload a TXT log file",
     type=["txt"],
     accept_multiple_files=False,
-    help="One file at a time. Remove the current file to upload a new one.",
+    key=f"uploader_{st.session_state.uploader_key}",
+    help="Upload one file. After parsing, the uploader resets so you can add another.",
 )
 
-if uploaded_file is None:
-    # File removed -> clear parsed groups so a new file can be uploaded fresh
-    if st.session_state.filename is not None:
-        st.session_state.data = {}
-        st.session_state.filename = None
-elif uploaded_file.name != st.session_state.filename:
+if uploaded_file is not None:
     raw = uploaded_file.read().decode("utf-8", errors="ignore")
     lines = raw.splitlines(keepends=True)
     st.session_state.data = split_by_date_plc(lines)
     st.session_state.filename = uploaded_file.name
-    st.success(f"Loaded: {uploaded_file.name}")
+    # Reset the uploader so the file disappears from the upload box
+    st.session_state.uploader_key += 1
+    st.rerun()
+
+if st.session_state.filename:
+    st.success(f"Loaded: {st.session_state.filename}")
 
 
 # ---------------- STATS ----------------
