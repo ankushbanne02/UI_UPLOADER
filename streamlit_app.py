@@ -55,39 +55,78 @@ st.markdown(
 
         /* Style each card's container */
         div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"] {
-            background: #ffffff;
-            border: 3px solid #000000;
-            border-left: 8px solid #f58220;
-            border-radius: 12px;
-            padding: 18px;
-            margin: 0 6px 14px 6px;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+            position: relative;
+            background:
+                linear-gradient(#ffffff, #ffffff) padding-box,
+                linear-gradient(135deg, #f58220 0%, #ffb066 50%, #fde2c8 100%) border-box;
+            border: 1.5px solid transparent;
+            border-radius: 16px;
+            padding: 20px 20px 18px 22px;
+            margin: 0 8px 18px 8px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+            box-shadow:
+                0 1px 2px rgba(17, 24, 39, 0.04),
+                0 6px 18px rgba(17, 24, 39, 0.06);
+            overflow: hidden;
+        }
+        /* Accent stripe on the left edge */
+        div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"]::before {
+            content: "";
+            position: absolute;
+            top: 14px;
+            bottom: 14px;
+            left: 0;
+            width: 5px;
+            border-radius: 0 6px 6px 0;
+            background: linear-gradient(180deg, #f58220 0%, #ff9a4d 100%);
+            box-shadow: 0 0 10px rgba(245, 130, 32, 0.35);
+        }
+        /* Subtle top corner glow */
+        div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"]::after {
+            content: "";
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(245, 130, 32, 0.12) 0%, rgba(245, 130, 32, 0) 70%);
+            pointer-events: none;
         }
         div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"]:hover {
-            transform: translateY(-2px);
-            border-color: #f58220;
-            border-left-color: #f58220;
-            box-shadow: 0 10px 24px rgba(245, 130, 32, 0.20);
+            transform: translateY(-4px);
+            box-shadow:
+                0 4px 10px rgba(245, 130, 32, 0.10),
+                0 16px 32px rgba(245, 130, 32, 0.18);
         }
 
         .card-date {
-            color: #f58220;
-            font-size: 13px;
-            font-weight: 600;
+            display: inline-block;
+            color: #b8530b;
+            background: linear-gradient(90deg, #fff4e6 0%, #ffe7cc 100%);
+            border: 1px solid #fcd9b4;
+            font-size: 11px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
+            letter-spacing: 1.2px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            margin-bottom: 10px;
         }
         .card-plc {
-            color: #111827;
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 6px;
+            color: #0f172a;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            margin-bottom: 10px;
         }
         .card-meta {
             color: #4b5563;
             font-size: 13px;
+            line-height: 1.7;
+            background: #fafafa;
+            border: 1px solid #f1f1f3;
+            border-radius: 10px;
+            padding: 10px 12px;
             margin-bottom: 14px;
         }
 
