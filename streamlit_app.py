@@ -263,7 +263,7 @@ st.markdown(
         header[data-testid="stHeader"] {{ display: none !important; }}
         div[data-testid="stToolbar"] {{ display: none !important; }}
         .block-container {{
-            padding-top: 1rem !important;
+            padding-top: 0 !important;
             padding-left: 28px !important;
             padding-right: 28px !important;
             max-width: 100% !important;
@@ -277,7 +277,7 @@ st.markdown(
             height: 60px;
             color: white;
             font-family: 'IBM Plex Sans', sans-serif;
-            border-radius: 4px;
+            border-radius: 0;
             margin: 0 -28px 20px -28px;
         }}
         .navbar .left, .navbar .right {{
