@@ -594,7 +594,7 @@ if data:
             date, plc = key.split("_PLC")
             start_t, end_t = get_time_range(data[key])
             with col:
-                with st.container():
+                with st.container(border=True):
                     head_left, head_right = st.columns([5, 1])
                     with head_left:
                         st.markdown(
