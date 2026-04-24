@@ -396,41 +396,61 @@ if not st.session_state.data:
     )
 
     if uploaded_file is not None:
-        # Show progress while reading + parsing the TXT file
-        prog_box = st.container()
-        with prog_box:
-            st.markdown(
-                f"<div style='color:#4b5563;font-size:13px;margin-bottom:6px;'>"
-                f"Processing <strong>{uploaded_file.name}</strong>"
-                f" ({uploaded_file.size:,} bytes)</div>",
+        # ---- Visible 0-100% progress bar for the TXT file ----
+        total_size = uploaded_file.size or 1
+        st.markdown(
+            f"<div style='color:#111827;font-size:14px;font-weight:600;"
+            f"margin: 6px 0 4px 0;'>Uploading "
+            f"<span style='color:#f58220'>{uploaded_file.name}</span> "
+            f"<span style='color:#6b7280;font-weight:500;'>"
+            f"({total_size:,} bytes)</span></div>",
+            unsafe_allow_html=True,
+        )
+        file_bar = st.progress(0)
+        file_status = st.empty()
+
+        # Read the file in chunks so the bar actually fills from 0 to 100
+        CHUNK = max(64 * 1024, total_size // 100)  # ~100 ticks
+        chunks = []
+        read_so_far = 0
+        # Make sure we're at the start of the stream
+        try:
+            uploaded_file.seek(0)
+        except Exception:
+            pass
+
+        while True:
+            chunk = uploaded_file.read(CHUNK)
+            if not chunk:
+                break
+            chunks.append(chunk)
+            read_so_far += len(chunk)
+            pct = int(min(100, (read_so_far / total_size) * 100))
+            file_bar.progress(pct)
+            file_status.markdown(
+                f"<div style='color:#4b5563;font-size:13px;'>"
+                f"{read_so_far:,} / {total_size:,} bytes &nbsp;•&nbsp; "
+                f"<strong>{pct}%</strong></div>",
                 unsafe_allow_html=True,
             )
-            file_bar = st.progress(0.0)
-            file_status = st.empty()
+            # Tiny delay so very small files still show a visible bar
+            time.sleep(0.01)
 
-        def _set(pct, msg):
-            file_bar.progress(min(max(pct, 0.0), 1.0))
-            file_status.info(msg)
+        file_bar.progress(100)
+        file_status.markdown(
+            f"<div style='color:#059669;font-size:13px;font-weight:600;'>"
+            f"Upload complete — 100%</div>",
+            unsafe_allow_html=True,
+        )
 
-        # 1) Read file
-        _set(0.05, "Reading file...")
-        raw_bytes = uploaded_file.read()
-        _set(0.30, f"Decoding {len(raw_bytes):,} bytes...")
-        raw = raw_bytes.decode("utf-8", errors="ignore")
-
-        # 2) Split into lines
-        _set(0.45, "Splitting into lines...")
+        # Decode + parse
+        raw = b"".join(chunks).decode("utf-8", errors="ignore")
         lines = raw.splitlines(keepends=True)
-        _set(0.55, f"Found {len(lines):,} lines. Grouping by date + PLC...")
-
-        # 3) Parse + group with line-level progress (mapped into 0.55 - 0.98)
-        def _parse_cb(p, msg):
-            _set(0.55 + p * 0.43, msg)
-
-        st.session_state.data = split_by_date_plc(lines, _parse_cb)
+        st.session_state.data = split_by_date_plc(lines)
         st.session_state.filename = uploaded_file.name
 
-        _set(1.0, f"Done. {len(st.session_state.data)} group(s) ready.")
+        # Brief pause so the user sees the 100% state before the cards appear
+        time.sleep(0.4)
         # Reset the uploader so the file disappears from the upload box
         st.session_state.uploader_key += 1
         st.rerun()
