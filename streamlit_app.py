@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import shutil
 import base64
 import threading
 from collections import defaultdict
@@ -24,6 +25,23 @@ TEMP_FOLDER = "temp_logs"
 BATCH_SIZE = 400
 MAX_THREADS = 1
 
+
+def _wipe_temp_folder():
+    """Remove every file/sub-folder inside TEMP_FOLDER, then ensure it exists."""
+    if os.path.isdir(TEMP_FOLDER):
+        for entry in os.listdir(TEMP_FOLDER):
+            entry_path = os.path.join(TEMP_FOLDER, entry)
+            try:
+                if os.path.isfile(entry_path) or os.path.islink(entry_path):
+                    os.remove(entry_path)
+                elif os.path.isdir(entry_path):
+                    shutil.rmtree(entry_path, ignore_errors=True)
+            except OSError:
+                pass
+    os.makedirs(TEMP_FOLDER, exist_ok=True)
+
+
+# Ensure the folder exists; wipe leftovers from any previous run once at startup.
 os.makedirs(TEMP_FOLDER, exist_ok=True)
 
 
@@ -579,16 +597,7 @@ if not st.session_state.data:
             return f"{n:.1f} TB"
 
         # Clear the temp folder before saving the newly uploaded file.
-        try:
-            for entry in os.listdir(TEMP_FOLDER):
-                entry_path = os.path.join(TEMP_FOLDER, entry)
-                if os.path.isfile(entry_path):
-                    try:
-                        os.remove(entry_path)
-                    except OSError:
-                        pass
-        except FileNotFoundError:
-            os.makedirs(TEMP_FOLDER, exist_ok=True)
+        _wipe_temp_folder()
 
         # Save the in-memory file to the server's temp folder.
         temp_upload_path = os.path.join(TEMP_FOLDER, uploaded_file.name)
