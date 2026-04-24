@@ -7,6 +7,7 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import streamlit as st
+import streamlit.components.v1 as components
 from pymongo import MongoClient
 from pymongo.errors import BulkWriteError
 
@@ -282,6 +283,59 @@ st.markdown(
 # ---------------- SUCCESS DIALOG ----------------
 if st.session_state.upload_success is not None:
     info = st.session_state.upload_success
+
+    # Lock the dialog: hide the close (X) button, block ESC key, and block
+    # backdrop clicks so the user can ONLY dismiss it via the action button.
+    components.html(
+        """
+        <script>
+        (function() {
+            const doc = window.parent.document;
+            const win = window.parent;
+
+            if (!doc.getElementById('lock-dialog-css')) {
+                const style = doc.createElement('style');
+                style.id = 'lock-dialog-css';
+                style.textContent = `
+                    div[data-testid="stDialog"] button[aria-label="Close"],
+                    div[role="dialog"] button[aria-label="Close"] {
+                        display: none !important;
+                    }
+                `;
+                doc.head.appendChild(style);
+            }
+
+            if (!win._dialogEscBlocked) {
+                win._dialogEscBlocked = true;
+                doc.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' &&
+                        doc.querySelector('div[data-testid="stDialog"]')) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                    }
+                }, true);
+            }
+
+            if (!win._dialogClickBlocked) {
+                win._dialogClickBlocked = true;
+                ['mousedown', 'click', 'pointerdown'].forEach(function(evt) {
+                    doc.addEventListener(evt, function(e) {
+                        const dialog = doc.querySelector('div[data-testid="stDialog"]');
+                        if (!dialog) return;
+                        const content = dialog.querySelector('div[role="dialog"]')
+                            || dialog.firstElementChild;
+                        if (content && !content.contains(e.target)) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                        }
+                    }, true);
+                });
+            }
+        })();
+        </script>
+        """,
+        height=0,
+    )
 
     @st.dialog("✅ Upload Successful")
     def _show_success_dialog():
