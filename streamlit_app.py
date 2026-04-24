@@ -56,30 +56,14 @@ st.markdown(
         /* Style each card's container */
         div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"] {
             position: relative;
-            background:
-                linear-gradient(#ffffff, #ffffff) padding-box,
-                linear-gradient(135deg, #f58220 0%, #ffb066 50%, #fde2c8 100%) border-box;
-            border: 1.5px solid transparent;
+            background: #ffffff;
+            border: 3px solid #0f172a;
             border-radius: 16px;
             padding: 20px 20px 18px 22px;
             margin: 0 8px 18px 8px;
             transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-            box-shadow:
-                0 1px 2px rgba(17, 24, 39, 0.04),
-                0 6px 18px rgba(17, 24, 39, 0.06);
+            box-shadow: 0 6px 18px rgba(17, 24, 39, 0.10);
             overflow: hidden;
-        }
-        /* Accent stripe on the left edge */
-        div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"]::before {
-            content: "";
-            position: absolute;
-            top: 14px;
-            bottom: 14px;
-            left: 0;
-            width: 5px;
-            border-radius: 0 6px 6px 0;
-            background: linear-gradient(180deg, #f58220 0%, #ff9a4d 100%);
-            box-shadow: 0 0 10px rgba(245, 130, 32, 0.35);
         }
         /* Subtle top corner glow */
         div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"]::after {
@@ -89,14 +73,15 @@ st.markdown(
             right: -40px;
             width: 120px;
             height: 120px;
-            background: radial-gradient(circle, rgba(245, 130, 32, 0.12) 0%, rgba(245, 130, 32, 0) 70%);
+            background: radial-gradient(circle, rgba(245, 130, 32, 0.10) 0%, rgba(245, 130, 32, 0) 70%);
             pointer-events: none;
         }
         div[data-testid="column"] > div[data-testid="stVerticalBlockBorderWrapper"]:hover {
             transform: translateY(-4px);
+            border-color: #000000;
             box-shadow:
-                0 4px 10px rgba(245, 130, 32, 0.10),
-                0 16px 32px rgba(245, 130, 32, 0.18);
+                0 4px 10px rgba(0, 0, 0, 0.10),
+                0 16px 32px rgba(245, 130, 32, 0.20);
         }
 
         .card-date {
