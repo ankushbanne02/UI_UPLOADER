@@ -395,21 +395,19 @@ if not st.session_state.data:
             if (win._uploadXhrHooked) return;
             win._uploadXhrHooked = true;
 
-            // Floating progress overlay
+            // Progress card placed right under the file uploader widget
             const overlay = doc.createElement('div');
             overlay.id = 'custom-upload-progress';
             overlay.style.cssText = `
-                position: fixed; left: 50%; bottom: 24px;
-                transform: translateX(-50%);
                 background: #ffffff; color: #111827;
                 border: 2px solid #f58220;
-                border-radius: 12px; padding: 14px 18px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+                border-radius: 12px; padding: 12px 14px;
+                box-shadow: 0 6px 18px rgba(245, 130, 32, 0.18);
                 font-family: 'IBM Plex Sans', sans-serif;
-                min-width: 340px; z-index: 99999; display: none;
+                margin: 10px 0 4px 0; display: none;
             `;
             overlay.innerHTML = `
-                <div id="cup-label" style="font-size:13px;font-weight:600;margin-bottom:8px;">
+                <div id="cup-label" style="font-size:13px;font-weight:600;margin-bottom:8px;color:#111827;">
                     Uploading file... 0%
                 </div>
                 <div style="background:#f3f4f6;border-radius:8px;height:10px;overflow:hidden;">
@@ -417,7 +415,17 @@ if not st.session_state.data:
                 </div>
                 <div id="cup-meta" style="font-size:12px;color:#6b7280;margin-top:6px;">0 B / 0 B</div>
             `;
-            doc.body.appendChild(overlay);
+
+            // Try to mount it next to the uploader; retry until uploader exists.
+            const mount = () => {
+                const uploader = doc.querySelector('[data-testid="stFileUploader"]');
+                if (uploader && !overlay.isConnected) {
+                    uploader.parentNode.insertBefore(overlay, uploader.nextSibling);
+                }
+            };
+            mount();
+            const mo = new MutationObserver(mount);
+            mo.observe(doc.body, { childList: true, subtree: true });
 
             const fmt = (n) => {
                 const u = ['B','KB','MB','GB'];
