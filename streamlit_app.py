@@ -384,6 +384,117 @@ if st.session_state.upload_success is not None:
 
 # ---------------- UPLOADER ----------------
 if not st.session_state.data:
+    # Inject JS that hooks into the browser's XHR upload to show real
+    # local-to-server transfer progress (the step where the spinner shows).
+    components.html(
+        """
+        <script>
+        (function() {
+            const win = window.parent;
+            const doc = win.document;
+            if (win._uploadXhrHooked) return;
+            win._uploadXhrHooked = true;
+
+            // Floating progress overlay
+            const overlay = doc.createElement('div');
+            overlay.id = 'custom-upload-progress';
+            overlay.style.cssText = `
+                position: fixed; left: 50%; bottom: 24px;
+                transform: translateX(-50%);
+                background: #ffffff; color: #111827;
+                border: 2px solid #f58220;
+                border-radius: 12px; padding: 14px 18px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+                font-family: 'IBM Plex Sans', sans-serif;
+                min-width: 340px; z-index: 99999; display: none;
+            `;
+            overlay.innerHTML = `
+                <div id="cup-label" style="font-size:13px;font-weight:600;margin-bottom:8px;">
+                    Uploading file... 0%
+                </div>
+                <div style="background:#f3f4f6;border-radius:8px;height:10px;overflow:hidden;">
+                    <div id="cup-fill" style="background:linear-gradient(90deg,#f58220,#ff9a4d);height:100%;width:0%;transition:width 0.1s ease;"></div>
+                </div>
+                <div id="cup-meta" style="font-size:12px;color:#6b7280;margin-top:6px;">0 B / 0 B</div>
+            `;
+            doc.body.appendChild(overlay);
+
+            const fmt = (n) => {
+                const u = ['B','KB','MB','GB'];
+                let i = 0;
+                while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+                return n.toFixed(1) + ' ' + u[i];
+            };
+
+            const show = () => { overlay.style.display = 'block'; };
+            const hide = () => {
+                overlay.style.display = 'none';
+                document.getElementById && (overlay.querySelector('#cup-fill').style.width = '0%');
+            };
+            const update = (loaded, total) => {
+                const pct = total ? Math.min(Math.round((loaded / total) * 100), 100) : 0;
+                overlay.querySelector('#cup-fill').style.width = pct + '%';
+                overlay.querySelector('#cup-label').textContent =
+                    'Uploading file to server... ' + pct + '%';
+                overlay.querySelector('#cup-meta').textContent =
+                    fmt(loaded) + ' / ' + fmt(total);
+            };
+
+            // Patch XHR
+            const OrigXHR = win.XMLHttpRequest;
+            function PatchedXHR() {
+                const xhr = new OrigXHR();
+                const origOpen = xhr.open;
+                let isUpload = false;
+                xhr.open = function(method, url) {
+                    if (typeof url === 'string' &&
+                        (url.includes('/_stcore/upload_file') ||
+                         url.includes('upload_file'))) {
+                        isUpload = true;
+                    }
+                    return origOpen.apply(xhr, arguments);
+                };
+                const origSend = xhr.send;
+                xhr.send = function(body) {
+                    if (isUpload && xhr.upload) {
+                        show();
+                        xhr.upload.addEventListener('progress', function(e) {
+                            if (e.lengthComputable) update(e.loaded, e.total);
+                        });
+                        xhr.upload.addEventListener('load', function() {
+                            update(1, 1);
+                            setTimeout(hide, 600);
+                        });
+                        xhr.upload.addEventListener('error', hide);
+                        xhr.upload.addEventListener('abort', hide);
+                    }
+                    return origSend.apply(xhr, arguments);
+                };
+                return xhr;
+            }
+            PatchedXHR.prototype = OrigXHR.prototype;
+            win.XMLHttpRequest = PatchedXHR;
+
+            // Also patch fetch in case Streamlit uses it
+            const origFetch = win.fetch;
+            win.fetch = function(input, init) {
+                const url = typeof input === 'string' ? input : (input && input.url) || '';
+                if (url.includes('upload_file') && init && init.body) {
+                    show();
+                    update(0, 1);
+                    const p = origFetch.apply(this, arguments);
+                    p.then(() => { update(1, 1); setTimeout(hide, 600); })
+                     .catch(hide);
+                    return p;
+                }
+                return origFetch.apply(this, arguments);
+            };
+        })();
+        </script>
+        """,
+        height=0,
+    )
+
     uploaded_file = st.file_uploader(
         "Upload a TXT log file",
         type=["txt"],
@@ -405,38 +516,10 @@ if not st.session_state.data:
                 n /= 1024
             return f"{n:.1f} TB"
 
-        progress_bar = st.progress(
-            0, text=f"Uploading {uploaded_file.name} to server... 0% (0 B / {_human(total_bytes)})"
-        )
-
+        # Save the in-memory file to the server's temp folder.
         temp_upload_path = os.path.join(TEMP_FOLDER, uploaded_file.name)
-        # Force ~100 visible steps so the user actually sees the bar fill up.
-        # In-memory writes are otherwise too fast for the browser to render.
-        STEPS = 100
-        chunk_size = max(total_bytes // STEPS, 1)
-        written = 0
         with open(temp_upload_path, "wb") as f:
-            for offset in range(0, total_bytes, chunk_size):
-                chunk = file_bytes[offset:offset + chunk_size]
-                f.write(chunk)
-                written += len(chunk)
-                pct = min(int((written / total_bytes) * 100), 100)
-                progress_bar.progress(
-                    pct,
-                    text=(
-                        f"Uploading {uploaded_file.name} to server... "
-                        f"{pct}% ({_human(written)} / {_human(total_bytes)})"
-                    ),
-                )
-                # Small delay so each step is visible in the browser.
-                time.sleep(0.02)
-
-        progress_bar.progress(
-            100,
-            text=f"Upload complete ✅ 100% ({_human(total_bytes)})",
-        )
-        time.sleep(0.6)
-        progress_bar.empty()
+            f.write(file_bytes)
 
         # Now parse the saved file
         with open(temp_upload_path, "r", encoding="utf-8", errors="ignore") as f:
