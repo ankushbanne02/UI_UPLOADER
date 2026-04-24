@@ -128,18 +128,35 @@ st.markdown(
             box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
 
-        /* Upload to MongoDB button — black */
+        /* Upload to MongoDB button — solid black with white text */
         div[class*="st-key-up_"] .stButton > button,
         .stElementContainer[class*="st-key-up_"] button {
-            background: #0f172a !important;
+            background: #000000 !important;
             color: #ffffff !important;
-            border: 1px solid #0f172a !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+        }
+        div[class*="st-key-up_"] .stButton > button p,
+        .stElementContainer[class*="st-key-up_"] button p,
+        div[class*="st-key-up_"] .stButton > button span,
+        .stElementContainer[class*="st-key-up_"] button span {
+            color: #ffffff !important;
         }
         div[class*="st-key-up_"] .stButton > button:hover,
         .stElementContainer[class*="st-key-up_"] button:hover {
-            background: #000000 !important;
-            border-color: #000000 !important;
+            background: #1a1a1a !important;
+            color: #ffffff !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.35) !important;
+        }
+        div[class*="st-key-up_"] .stButton > button:focus,
+        div[class*="st-key-up_"] .stButton > button:active,
+        .stElementContainer[class*="st-key-up_"] button:focus,
+        .stElementContainer[class*="st-key-up_"] button:active {
+            background: #000000 !important;
+            color: #ffffff !important;
+            border: none !important;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.4) !important;
         }
 
         .stDownloadButton > button {
