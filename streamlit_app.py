@@ -128,6 +128,20 @@ st.markdown(
             box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
 
+        /* Upload to MongoDB button — black */
+        div[class*="st-key-up_"] .stButton > button,
+        .stElementContainer[class*="st-key-up_"] button {
+            background: #0f172a !important;
+            color: #ffffff !important;
+            border: 1px solid #0f172a !important;
+        }
+        div[class*="st-key-up_"] .stButton > button:hover,
+        .stElementContainer[class*="st-key-up_"] button:hover {
+            background: #000000 !important;
+            border-color: #000000 !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.35) !important;
+        }
+
         .stDownloadButton > button {
             background: linear-gradient(90deg, #06b6d4, #3b82f6);
             color: white;
