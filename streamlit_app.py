@@ -30,7 +30,7 @@ os.makedirs(TEMP_FOLDER, exist_ok=True)
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
     page_title="Parcel Log Uploader",
-    page_icon="📦",
+    page_icon="attached_assets/favicon_1777016208711.ico",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
