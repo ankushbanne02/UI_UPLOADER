@@ -152,18 +152,21 @@ def get_collection():
 
 
 # ---------------- LOGIC ----------------
-def split_by_date_plc(lines):
+def split_by_date_plc(lines, progress_cb=None):
     grouped = defaultdict(list)
     date_pattern = re.compile(r"(\d{4}-\d{2}-\d{2})")
-    for line in lines:
+    plc_pattern = re.compile(r"PLC-(\d+)")
+    total = len(lines) or 1
+    step = max(1, total // 100)  # update at most ~100 times
+    for i, line in enumerate(lines):
         date_m = date_pattern.search(line)
-        plc_m = re.search(r"PLC-(\d+)", line)
-        if not (date_m and plc_m):
-            continue
-        date = date_m.group(1)
-        plc = plc_m.group(1)
-        key = f"{date}_PLC{plc}"
-        grouped[key].append(line)
+        plc_m = plc_pattern.search(line)
+        if date_m and plc_m:
+            key = f"{date_m.group(1)}_PLC{plc_m.group(1)}"
+            grouped[key].append(line)
+        if progress_cb is not None and (i % step == 0 or i == total - 1):
+            pct = (i + 1) / total
+            progress_cb(pct, f"Parsing line {i + 1:,} of {total:,}...")
     return dict(grouped)
 
 
@@ -393,10 +396,41 @@ if not st.session_state.data:
     )
 
     if uploaded_file is not None:
-        raw = uploaded_file.read().decode("utf-8", errors="ignore")
+        # Show progress while reading + parsing the TXT file
+        prog_box = st.container()
+        with prog_box:
+            st.markdown(
+                f"<div style='color:#4b5563;font-size:13px;margin-bottom:6px;'>"
+                f"Processing <strong>{uploaded_file.name}</strong>"
+                f" ({uploaded_file.size:,} bytes)</div>",
+                unsafe_allow_html=True,
+            )
+            file_bar = st.progress(0.0)
+            file_status = st.empty()
+
+        def _set(pct, msg):
+            file_bar.progress(min(max(pct, 0.0), 1.0))
+            file_status.info(msg)
+
+        # 1) Read file
+        _set(0.05, "Reading file...")
+        raw_bytes = uploaded_file.read()
+        _set(0.30, f"Decoding {len(raw_bytes):,} bytes...")
+        raw = raw_bytes.decode("utf-8", errors="ignore")
+
+        # 2) Split into lines
+        _set(0.45, "Splitting into lines...")
         lines = raw.splitlines(keepends=True)
-        st.session_state.data = split_by_date_plc(lines)
+        _set(0.55, f"Found {len(lines):,} lines. Grouping by date + PLC...")
+
+        # 3) Parse + group with line-level progress (mapped into 0.55 - 0.98)
+        def _parse_cb(p, msg):
+            _set(0.55 + p * 0.43, msg)
+
+        st.session_state.data = split_by_date_plc(lines, _parse_cb)
         st.session_state.filename = uploaded_file.name
+
+        _set(1.0, f"Done. {len(st.session_state.data)} group(s) ready.")
         # Reset the uploader so the file disappears from the upload box
         st.session_state.uploader_key += 1
         st.rerun()
