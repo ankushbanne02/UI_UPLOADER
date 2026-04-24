@@ -192,7 +192,7 @@ def split_by_date_plc(lines):
 
 
 def process_and_upload(key, lines, progress_cb):
-    """Returns (success: bool, message: str)."""
+    """Returns (success: bool, message: str, records_uploaded: int)."""
     try:
         progress_cb(0.10, "Writing temp file...")
         temp_path = os.path.join(TEMP_FOLDER, f"{key}.txt")
@@ -203,7 +203,7 @@ def process_and_upload(key, lines, progress_cb):
         progress_cb(0.30, "Converting TXT → JSON...")
         parsed_json = convert_txt_to_json(temp_path)
         if not parsed_json:
-            return False, "No data parsed"
+            return False, "No data parsed", 0
 
         for record in parsed_json:
             record["source_key"] = key
@@ -241,9 +241,9 @@ def process_and_upload(key, lines, progress_cb):
             pass
 
         progress_cb(1.0, "Upload complete ✅")
-        return True, f"Uploaded {len(parsed_json)} records in {total} batch(es)"
+        return True, f"Uploaded {len(parsed_json)} records in {total} batch(es)", len(parsed_json)
     except Exception as e:
-        return False, f"Error: {e}"
+        return False, f"Error: {e}", 0
 
 
 # ---------------- NAVBAR ----------------
@@ -387,11 +387,10 @@ if st.session_state.upload_success is not None:
                         <strong style="color:#dc2626;">{info['end']}</strong>
                     </div>
                     <div style="display:flex; justify-content:space-between; padding:6px 0;">
-                        <span style="color:#6b7280;">Log lines</span>
-                        <strong style="color:#111827;">{info['lines']}</strong>
+                        <span style="color:#6b7280;">Records uploaded</span>
+                        <strong style="color:#111827;">{info['records']}</strong>
                     </div>
                 </div>
-                <div style="margin-top:12px; color:#4b5563; font-size:13px;">{info['msg']}</div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -635,7 +634,7 @@ if data:
                         _bar.progress(min(max(pct, 0.0), 1.0))
                         _txt.info(msg)
 
-                    success, msg = process_and_upload(key, data[key], cb)
+                    success, msg, records = process_and_upload(key, data[key], cb)
                     if success:
                         # Stash details for the success dialog; do NOT remove card yet
                         st.session_state.upload_success = {
@@ -644,7 +643,7 @@ if data:
                             "plc": plc,
                             "start": start_t,
                             "end": end_t,
-                            "lines": len(data[key]),
+                            "records": records,
                             "msg": msg,
                         }
                         st.rerun()
