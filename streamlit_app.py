@@ -410,28 +410,32 @@ if not st.session_state.data:
         )
 
         temp_upload_path = os.path.join(TEMP_FOLDER, uploaded_file.name)
-        # Write in chunks so the progress bar can advance smoothly.
-        chunk_size = max(total_bytes // 100, 64 * 1024)  # ~1% per chunk, min 64KB
+        # Force ~100 visible steps so the user actually sees the bar fill up.
+        # In-memory writes are otherwise too fast for the browser to render.
+        STEPS = 100
+        chunk_size = max(total_bytes // STEPS, 1)
         written = 0
         with open(temp_upload_path, "wb") as f:
             for offset in range(0, total_bytes, chunk_size):
                 chunk = file_bytes[offset:offset + chunk_size]
                 f.write(chunk)
                 written += len(chunk)
-                pct = int((written / total_bytes) * 100)
+                pct = min(int((written / total_bytes) * 100), 100)
                 progress_bar.progress(
-                    min(pct, 100),
+                    pct,
                     text=(
                         f"Uploading {uploaded_file.name} to server... "
-                        f"{min(pct, 100)}% ({_human(written)} / {_human(total_bytes)})"
+                        f"{pct}% ({_human(written)} / {_human(total_bytes)})"
                     ),
                 )
+                # Small delay so each step is visible in the browser.
+                time.sleep(0.02)
 
         progress_bar.progress(
             100,
             text=f"Upload complete ✅ 100% ({_human(total_bytes)})",
         )
-        time.sleep(0.4)
+        time.sleep(0.6)
         progress_bar.empty()
 
         # Now parse the saved file
