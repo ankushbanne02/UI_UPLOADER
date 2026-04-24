@@ -393,9 +393,41 @@ if not st.session_state.data:
     )
 
     if uploaded_file is not None:
-        raw = uploaded_file.read().decode("utf-8", errors="ignore")
+        progress_bar = st.progress(0, text="Starting upload...")
+
+        progress_bar.progress(5, text="Reading file... 5%")
+        file_bytes = uploaded_file.getvalue()
+        total_bytes = len(file_bytes) or 1
+
+        progress_bar.progress(20, text=f"Decoding file... 20%")
+        raw = file_bytes.decode("utf-8", errors="ignore")
+
+        progress_bar.progress(35, text="Splitting into lines... 35%")
         lines = raw.splitlines(keepends=True)
-        st.session_state.data = split_by_date_plc(lines)
+        total_lines = len(lines) or 1
+
+        # Parse lines incrementally so the bar moves from 35% -> 95%
+        date_pattern = re.compile(r"(\d{4}-\d{2}-\d{2})")
+        plc_pattern = re.compile(r"PLC-(\d+)")
+        grouped = defaultdict(list)
+        step = max(total_lines // 50, 1)
+        for idx, line in enumerate(lines):
+            date_m = date_pattern.search(line)
+            plc_m = plc_pattern.search(line)
+            if date_m and plc_m:
+                grouped[f"{date_m.group(1)}_PLC{plc_m.group(1)}"].append(line)
+            if idx % step == 0:
+                pct = 35 + int((idx / total_lines) * 60)
+                progress_bar.progress(
+                    min(pct, 95),
+                    text=f"Parsing lines {idx + 1}/{total_lines}... {min(pct, 95)}%",
+                )
+
+        progress_bar.progress(100, text="Upload complete ✅ 100%")
+        time.sleep(0.4)
+        progress_bar.empty()
+
+        st.session_state.data = dict(grouped)
         st.session_state.filename = uploaded_file.name
         # Reset the uploader so the file disappears from the upload box
         st.session_state.uploader_key += 1
