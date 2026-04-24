@@ -393,41 +393,51 @@ if not st.session_state.data:
     )
 
     if uploaded_file is not None:
-        progress_bar = st.progress(0, text="Starting upload...")
-
-        progress_bar.progress(5, text="Reading file... 5%")
+        # Stream the uploaded file from memory to a temp file on the server
+        # and show a 0% -> 100% progress bar based on bytes written.
         file_bytes = uploaded_file.getvalue()
         total_bytes = len(file_bytes) or 1
 
-        progress_bar.progress(20, text=f"Decoding file... 20%")
-        raw = file_bytes.decode("utf-8", errors="ignore")
+        def _human(n):
+            for unit in ("B", "KB", "MB", "GB"):
+                if n < 1024:
+                    return f"{n:.1f} {unit}"
+                n /= 1024
+            return f"{n:.1f} TB"
 
-        progress_bar.progress(35, text="Splitting into lines... 35%")
-        lines = raw.splitlines(keepends=True)
-        total_lines = len(lines) or 1
+        progress_bar = st.progress(
+            0, text=f"Uploading {uploaded_file.name} to server... 0% (0 B / {_human(total_bytes)})"
+        )
 
-        # Parse lines incrementally so the bar moves from 35% -> 95%
-        date_pattern = re.compile(r"(\d{4}-\d{2}-\d{2})")
-        plc_pattern = re.compile(r"PLC-(\d+)")
-        grouped = defaultdict(list)
-        step = max(total_lines // 50, 1)
-        for idx, line in enumerate(lines):
-            date_m = date_pattern.search(line)
-            plc_m = plc_pattern.search(line)
-            if date_m and plc_m:
-                grouped[f"{date_m.group(1)}_PLC{plc_m.group(1)}"].append(line)
-            if idx % step == 0:
-                pct = 35 + int((idx / total_lines) * 60)
+        temp_upload_path = os.path.join(TEMP_FOLDER, uploaded_file.name)
+        # Write in chunks so the progress bar can advance smoothly.
+        chunk_size = max(total_bytes // 100, 64 * 1024)  # ~1% per chunk, min 64KB
+        written = 0
+        with open(temp_upload_path, "wb") as f:
+            for offset in range(0, total_bytes, chunk_size):
+                chunk = file_bytes[offset:offset + chunk_size]
+                f.write(chunk)
+                written += len(chunk)
+                pct = int((written / total_bytes) * 100)
                 progress_bar.progress(
-                    min(pct, 95),
-                    text=f"Parsing lines {idx + 1}/{total_lines}... {min(pct, 95)}%",
+                    min(pct, 100),
+                    text=(
+                        f"Uploading {uploaded_file.name} to server... "
+                        f"{min(pct, 100)}% ({_human(written)} / {_human(total_bytes)})"
+                    ),
                 )
 
-        progress_bar.progress(100, text="Upload complete ✅ 100%")
+        progress_bar.progress(
+            100,
+            text=f"Upload complete ✅ 100% ({_human(total_bytes)})",
+        )
         time.sleep(0.4)
         progress_bar.empty()
 
-        st.session_state.data = dict(grouped)
+        # Now parse the saved file
+        with open(temp_upload_path, "r", encoding="utf-8", errors="ignore") as f:
+            lines = f.readlines()
+        st.session_state.data = split_by_date_plc(lines)
         st.session_state.filename = uploaded_file.name
         # Reset the uploader so the file disappears from the upload box
         st.session_state.uploader_key += 1
