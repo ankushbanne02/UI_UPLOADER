@@ -210,6 +210,8 @@ if "uploader_key" not in st.session_state:
     st.session_state.uploader_key = 0
 if "upload_success" not in st.session_state:
     st.session_state.upload_success = None  # dict with key/date/plc/start/end/count
+if "db_down_error" not in st.session_state:
+    st.session_state.db_down_error = False
 if "mongo_client" not in st.session_state:
     try:
         st.session_state.mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
@@ -459,6 +461,35 @@ if st.session_state.upload_success is not None:
     _show_success_dialog()
 
 
+# ---------------- DB DOWN DIALOG ----------------
+if st.session_state.db_down_error:
+
+    @st.dialog("Database Service Unavailable")
+    def _show_db_down_dialog():
+        st.markdown(
+            """
+            <div style="padding: 8px 4px;">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                    <span style="font-size:22px;">⚠️</span>
+                    <span style="font-size:16px; color:#dc2626; font-weight:600;">
+                        Database service is down.
+                    </span>
+                </div>
+                <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:14px; color:#7f1d1d; font-size:14px; line-height:1.5;">
+                    Please wait a while or contact the
+                    <strong>LogTalk Technical Team</strong>.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("OK", type="primary", use_container_width=True):
+            st.session_state.db_down_error = False
+            st.rerun()
+
+    _show_db_down_dialog()
+
+
 # ---------------- UPLOADER ----------------
 if not st.session_state.data:
     # Inject JS that hooks into the browser's XHR upload to show real
@@ -698,6 +729,21 @@ if data:
                         }
                         st.rerun()
                     else:
-                        status_text.error(msg)
+                        low = msg.lower()
+                        db_down = (
+                            "database unreachable" in low
+                            or "serverselectiontimeout" in low
+                            or "connection refused" in low
+                            or "connection reset" in low
+                            or "no servers" in low
+                            or "network is unreachable" in low
+                            or "name or service not known" in low
+                            or "autoreconnect" in low
+                        )
+                        if db_down:
+                            st.session_state.db_down_error = True
+                            st.rerun()
+                        else:
+                            status_text.error(msg)
 else:
     st.info("Upload a `.txt` log file above to get started.")
