@@ -266,6 +266,11 @@ def process_and_upload(key, lines, progress_cb):
 
         collection = get_collection()
 
+        try:
+            st.session_state.mongo_client.admin.command("ping")
+        except Exception as e:
+            return False, f"Database unreachable: {e}", 0
+
         def insert_batch(batch):
             try:
                 collection.insert_many(batch, ordered=False)
@@ -277,7 +282,8 @@ def process_and_upload(key, lines, progress_cb):
         progress_cb(0.50, "Uploading to MongoDB...")
         with ThreadPoolExecutor(max_workers=MAX_THREADS) as ex:
             futures = [ex.submit(insert_batch, b) for b in batches]
-            for _ in as_completed(futures):
+            for fut in as_completed(futures):
+                fut.result()
                 completed += 1
                 pct = 0.50 + (completed / total) * 0.45
                 progress_cb(pct, f"Uploading batch {completed}/{total}...")
