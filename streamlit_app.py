@@ -1,3 +1,4 @@
+
 import os
 import re
 import time
@@ -16,9 +17,7 @@ from KJ import convert_txt_to_json
 
 # ---------------- CONFIG ----------------
 MONGO_URI = os.environ.get(
-    "MONGO_URI",
-    "mongodb+srv://logtalkdb:Admin_1316@db-logtalk-dev.global.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000",
-)
+    "MONGO_URI")
 DB_NAME = os.environ.get("DB_NAME", "ASD")
 COLLECTION_NAME = os.environ.get("COLLECTION_NAME", "parcels_data")
 TEMP_FOLDER = "temp_logs"
@@ -47,8 +46,8 @@ os.makedirs(TEMP_FOLDER, exist_ok=True)
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
-    page_title="Parcel Log Uploader",
-    page_icon="attached_assets/favicon_1777016208711.ico",
+    page_title="Logs Uploader",
+    page_icon="attached_assets/favicon.ico",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -410,7 +409,7 @@ if st.session_state.upload_success is not None:
         height=0,
     )
 
-    @st.dialog("✅ Upload Successful")
+    @st.dialog("Upload Successful")
     def _show_success_dialog():
         st.markdown(
             f"""
@@ -444,7 +443,7 @@ if st.session_state.upload_success is not None:
             """,
             unsafe_allow_html=True,
         )
-        if st.button("OK, remove card", type="primary", use_container_width=True):
+        if st.button("OK, Done", type="primary", use_container_width=True):
             st.session_state.data.pop(info["key"], None)
             if not st.session_state.data:
                 st.session_state.filename = None
@@ -669,16 +668,9 @@ if data:
                             st.rerun()
 
                 file_bytes = "".join(data[key]).encode("utf-8")
-                st.download_button(
-                    label="⬇ Download Logs",
-                    data=file_bytes,
-                    file_name=f"{date}_PLC{plc}.txt",
-                    mime="text/plain",
-                    key=f"dl_{key}",
-                    use_container_width=True,
-                )
+               
 
-                if st.button("⬆ Upload to MongoDB", key=f"up_{key}", use_container_width=True):
+                if st.button(" Upload to MongoDB", key=f"up_{key}", use_container_width=True):
                     progress_bar = st.progress(0.0)
                     status_text = st.empty()
 
